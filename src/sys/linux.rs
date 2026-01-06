@@ -1,6 +1,6 @@
 use std::{thread::sleep, time::Duration};
 
-use crate::{Error, Result, Wifi, WifiSecurity, WlanScanner};
+use crate::{misc::get_channel, Error, Result, Wifi, WifiSecurity, WlanScanner};
 
 use neli_wifi::Socket as SocketN;
 use netlink_rust::{generic, Protocol, Socket};
@@ -15,7 +15,7 @@ impl WlanScanner for ScanLinux {
     /// Returns a list of WiFi hotspots in your area.
     /// Open networks are recognised as having WPA2-PSK on Linux.
     /// Uses `nl80211-rs` and `netlink-rust` crates on Linux.
-    /// On Linux, very frequent scan may produce unexpected results on some machines,
+    /// On Linux, very frequent scans may produce unexpected results on some machines,
     /// scanning requires root privileges and results can be up to 2500ms old.
     fn scan(&mut self) -> Result<Vec<Wifi>> {
         let mut socket_conn = SocketN::connect().map_err(|e| Error::SocketError(e.to_string()))?;
@@ -47,7 +47,7 @@ impl WlanScanner for ScanLinux {
                     }
                 }
             },
-            Err(_) => println!("WARNING: Code to trigger WiFi scan panicked"),
+            Err(_) => eprintln!("WARNING: Code to trigger WiFi scan panicked"),
         }
 
         for interface in &interfaces {
@@ -124,7 +124,7 @@ fn trigger_scan() -> Result<()> {
                 println!("Triggered scan on: {}", dev.interface_name)
             }
             Err(e) => {
-                println!(
+                eprintln!(
                     "WARNING: Failed to trigger scan on {}: {}",
                     dev.interface_name, e
                 );
@@ -154,20 +154,6 @@ fn convert_mac(bytes: Vec<u8>) -> String {
         .map(|b| format!("{:02x}", b))
         .collect::<Vec<_>>()
         .join(":")
-}
-
-fn get_channel(frequency: u32) -> u32 {
-    if (2412..=2472).contains(&frequency) {
-        (frequency - 2407) / 5
-    } else if frequency == 2484 {
-        14 // japan
-    } else if (5180..=5895).contains(&frequency) {
-        (frequency - 5000) / 5
-    } else if (5955..=7115).contains(&frequency) {
-        (frequency - 5950) / 5
-    } else {
-        0
-    }
 }
 
 fn get_ssid(ie_data: Vec<u8>) -> String {
@@ -242,5 +228,5 @@ fn get_security(ie_data: Vec<u8>) -> Vec<WifiSecurity> {
         Err(_) => return vec![WifiSecurity::Unknown],
     }
 
-    vec![WifiSecurity::Unknown]
+    vec![WifiSecurity::Open]
 }

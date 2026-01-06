@@ -1,4 +1,4 @@
-use crate::{Error, Result, Wifi, WifiSecurity, WlanScanner};
+use crate::{misc::get_channel, Error, Result, Wifi, WifiSecurity, WlanScanner};
 
 use libwifi::{frame::components::RsnAkmSuite, parsers::parse_rsn_information};
 use win32_wlan::query_system_interfaces;
@@ -35,20 +35,6 @@ impl WlanScanner for ScanWindows {
                 "No WiFi interfaces found".to_string(),
             ))
         }
-    }
-}
-
-fn get_channel(frequency: u32) -> u32 {
-    if (2412..=2472).contains(&frequency) {
-        (frequency - 2407) / 5
-    } else if frequency == 2484 {
-        14 // japan
-    } else if (5180..=5895).contains(&frequency) {
-        (frequency - 5000) / 5
-    } else if (5955..=7115).contains(&frequency) {
-        (frequency - 5950) / 5
-    } else {
-        0
     }
 }
 

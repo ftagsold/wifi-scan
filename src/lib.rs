@@ -31,9 +31,12 @@
 //! Alternatively if you've cloned the the Git repo, you can run the above example
 //! using: `cargo run --example scan`.
 
+mod misc;
 mod sys;
 
 use std::fmt;
+
+use crate::misc::yes_or_no;
 
 type Result<T> = std::result::Result<T, Error>;
 
@@ -140,7 +143,7 @@ impl fmt::Display for Wifi {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "[MAC: {} | SSID: {} | Channel: {} | RSSI: {} dBm | Security: {}",
+            "BSSID: {} | SSID: {} | Channel: {} | RSSI: {} dBm | Security: {} | Hidden: {}",
             self.mac,
             self.ssid,
             self.channel,
@@ -149,7 +152,8 @@ impl fmt::Display for Wifi {
                 .iter()
                 .map(|s| s.to_string())
                 .collect::<Vec<_>>()
-                .join(", ")
+                .join(", "),
+            yes_or_no(self.is_hidden())
         )
     }
 }
