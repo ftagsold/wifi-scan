@@ -34,9 +34,8 @@
 mod misc;
 mod sys;
 
-use std::fmt;
-
 use crate::misc::yes_or_no;
+use std::fmt;
 
 type Result<T> = std::result::Result<T, Error>;
 
@@ -291,8 +290,8 @@ pub fn scan() -> Result<Vec<Wifi>> {
 
     #[cfg(target_os = "android")]
     {
-        match sys::android::ANDROID_SCANNER.get() {
-            Some(mut scanner) => scanner.scan(),
+        match sys::android::ANDROID_SCANNER.get_mut() {
+            Some(scanner) => scanner.scan(),
             None => Err(Error::JNIError(
                 "AndroidScanner not initialized".to_string(),
             )),
@@ -301,6 +300,6 @@ pub fn scan() -> Result<Vec<Wifi>> {
 }
 
 #[cfg(target_os = "android")]
-pub fn init_with_env(env: jni::JNIEnv, context: jni::objects::JObject) -> Result<()> {
+pub fn init_with_env(env: &mut jni::JNIEnv, context: jni::objects::JObject) -> Result<()> {
     sys::android::AndroidScanner::init_with_env(env, context)
 }
