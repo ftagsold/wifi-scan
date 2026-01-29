@@ -288,9 +288,19 @@ pub fn scan() -> Result<Vec<Wifi>> {
         let mut scanner = sys::windows::ScanWindows;
         scanner.scan()
     }
+
+    #[cfg(target_os = "android")]
+    {
+        match sys::android::ANDROID_SCANNER.get() {
+            Some(mut scanner) => scanner.scan(),
+            None => Err(Error::JNIError(
+                "AndroidScanner not initialized".to_string(),
+            )),
+        }
+    }
 }
 
 #[cfg(target_os = "android")]
-pub fn scan_android(env: &mut jni::JNIEnv, context: jni::objects::JObject) -> Result<Vec<Wifi>> {
-    sys::android::scan(env, context)
+pub fn init_with_env(env: jni::JNIEnv, context: jni::objects::JObject) -> Result<()> {
+    sys::android::AndroidScanner::init_with_env(env, context)
 }
