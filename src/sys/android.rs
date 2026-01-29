@@ -1,11 +1,10 @@
 use crate::{Error, Result, Wifi, WlanScanner};
 use jni::objects::{JObject, JString, JValue};
 use jni::JNIEnv;
-use std::cell::OnceCell;
+use std::sync::OnceLock;
 
-pub static ANDROID_SCANNER: OnceCell<AndroidScanner> = OnceCell::new();
+pub static ANDROID_SCANNER: OnceLock<AndroidScanner> = OnceLock::new();
 
-#[derive(Copy)]
 pub struct AndroidScanner {
     env: JNIEnv<'static>,
     context: JObject<'static>,
