@@ -27,7 +27,7 @@ impl WlanScanner for AndroidScanner {
             .get()
             .ok_or_else(|| Error::JNIError("AndroidScanner not initialized".to_string()))?;
 
-        let env = scanner
+        let mut env = scanner
             .java_vm
             .attach_current_thread()
             .map_err(|e| Error::JNIError(e.to_string()))?;
@@ -44,7 +44,7 @@ impl WlanScanner for AndroidScanner {
 
         let wifi_manager = env
             .call_method(
-                scanner.context,
+                &scanner.context,
                 "getSystemService",
                 "(Ljava/lang/String;)Ljava/lang/Object;",
                 &[JValue::Object(&wifi_service)],
@@ -54,19 +54,19 @@ impl WlanScanner for AndroidScanner {
             .map_err(|e| Error::JNIError(e.to_string()))?;
 
         // wifiManager.startScan()
-        env.call_method(wifi_manager, "startScan", "()Z", &[])
+        env.call_method(&wifi_manager, "startScan", "()Z", &[])
             .map_err(|e| Error::JNIError(e.to_string()))?;
 
         // wifiManager.getScanResults()
         let scan_results = env
-            .call_method(wifi_manager, "getScanResults", "()Ljava/util/List;", &[])
+            .call_method(&wifi_manager, "getScanResults", "()Ljava/util/List;", &[])
             .map_err(|e| Error::JNIError(e.to_string()))?
             .l()
             .map_err(|e| Error::JNIError(e.to_string()))?;
 
         // List.size()
         let size = env
-            .call_method(scan_results, "size", "()I", &[])
+            .call_method(&scan_results, "size", "()I", &[])
             .map_err(|e| Error::JNIError(e.to_string()))?
             .i()
             .map_err(|e| Error::JNIError(e.to_string()))?;
@@ -77,7 +77,7 @@ impl WlanScanner for AndroidScanner {
             // List.get(i)
             let scan_result = env
                 .call_method(
-                    scan_results,
+                    &scan_results,
                     "get",
                     "(I)Ljava/lang/Object;",
                     &[JValue::Int(i)],
@@ -87,29 +87,29 @@ impl WlanScanner for AndroidScanner {
                 .map_err(|e| Error::JNIError(e.to_string()))?;
 
             let ssid: String = env
-                .get_field(scan_result, "SSID", "Ljava/lang/String;")
+                .get_field(&scan_result, "SSID", "Ljava/lang/String;")
                 .map_err(|e| Error::JNIError(e.to_string()))?
                 .l()
-                .and_then(|s| env.get_string(JString::from(s)))
+                .and_then(|s| env.get_string(&JString::from(s)))
                 .map_err(|e| Error::JNIError(e.to_string()))?
                 .into();
 
             let mac: String = env
-                .get_field(scan_result, "BSSID", "Ljava/lang/String;")
+                .get_field(&scan_result, "BSSID", "Ljava/lang/String;")
                 .map_err(|e| Error::JNIError(e.to_string()))?
                 .l()
-                .and_then(|s| env.get_string(JString::from(s)))
+                .and_then(|s| env.get_string(&JString::from(s)))
                 .map_err(|e| Error::JNIError(e.to_string()))?
                 .into();
 
             let signal_level = env
-                .get_field(scan_result, "level", "I")
+                .get_field(&scan_result, "level", "I")
                 .map_err(|e| Error::JNIError(e.to_string()))?
                 .i()
                 .map_err(|e| Error::JNIError(e.to_string()))?;
 
             let channel = env
-                .get_field(scan_result, "frequency", "I")
+                .get_field(&scan_result, "frequency", "I")
                 .map_err(|e| Error::JNIError(e.to_string()))?
                 .i()
                 .map_err(|e| Error::JNIError(e.to_string()))? as u32;
