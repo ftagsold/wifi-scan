@@ -1,3 +1,8 @@
 .DS_Store
 target
 Cargo.lock
+/.idea/copilot.data.migration.ask2agent.xml
+/.idea/modules.xml
+/.idea/vcs.xml
+/.idea/wifi-scan.iml
+/.idea/.gitignore

@@ -46,6 +46,7 @@ pub enum Error {
     InterfaceError(String),
     SocketError(String),
     ScanFailed(String),
+    JNIError(String),
 }
 
 /// Enum of WiFi Securities wifi_scan can output.
@@ -107,6 +108,9 @@ impl fmt::Display for Error {
             }
             Error::ScanFailed(detail) => {
                 write!(f, "Scan Failed: {}", detail)
+            }
+            Error::JNIError(detail) => {
+                write!(f, "JNI Failed: {}", detail)
             }
         }
     }
@@ -284,4 +288,9 @@ pub fn scan() -> Result<Vec<Wifi>> {
         let mut scanner = sys::windows::ScanWindows;
         scanner.scan()
     }
+}
+
+#[cfg(target_os = "android")]
+pub fn scan_android(env: &mut jni::JNIEnv, context: jni::objects::JObject) -> Result<Vec<Wifi>> {
+    sys::android::scan(env, context)
 }
