@@ -11,7 +11,7 @@ pub struct AndroidScanner {
 }
 
 impl AndroidScanner {
-    pub fn init_with_env(env: JavaVM, context: GlobalRef) -> Result<()> {
+    pub fn init_with_env(java_vm: JavaVM, context: GlobalRef) -> Result<()> {
         ANDROID_SCANNER.get_or_init(|| AndroidScanner { java_vm, context });
 
         Ok(())
