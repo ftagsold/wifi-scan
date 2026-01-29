@@ -290,12 +290,7 @@ pub fn scan() -> Result<Vec<Wifi>> {
 
     #[cfg(target_os = "android")]
     {
-        match sys::android::ANDROID_SCANNER.get_mut() {
-            Some(scanner) => scanner.scan(),
-            None => Err(Error::JNIError(
-                "AndroidScanner not initialized".to_string(),
-            )),
-        }
+        sys::android::AndroidScanner::scan()
     }
 }
 

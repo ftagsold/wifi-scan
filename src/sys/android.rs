@@ -1,4 +1,4 @@
-use crate::{Error, Result, Wifi, WlanScanner};
+use crate::{Error, Result, Wifi};
 use jni::objects::{GlobalRef, JObject, JString, JValue};
 use jni::{JNIEnv, JavaVM};
 use std::sync::OnceLock;
@@ -21,8 +21,8 @@ impl AndroidScanner {
     }
 }
 
-impl WlanScanner for AndroidScanner {
-    fn scan(&mut self) -> Result<Vec<Wifi>> {
+impl AndroidScanner {
+    pub fn scan() -> Result<Vec<Wifi>> {
         let scanner = ANDROID_SCANNER
             .get()
             .ok_or_else(|| Error::JNIError("AndroidScanner not initialized".to_string()))?;
@@ -86,19 +86,27 @@ impl WlanScanner for AndroidScanner {
                 .l()
                 .map_err(|e| Error::JNIError(e.to_string()))?;
 
-            let ssid: String = env
+            let ssid_j_string = env
                 .get_field(&scan_result, "SSID", "Ljava/lang/String;")
                 .map_err(|e| Error::JNIError(e.to_string()))?
-                .l()
-                .and_then(|s| env.get_string(&JString::from(s)))
+                .l();
+
+            let ssid: String = env
+                .get_string(&JString::from(
+                    ssid_j_string.map_err(|e| Error::JNIError(e.to_string()))?,
+                ))
                 .map_err(|e| Error::JNIError(e.to_string()))?
                 .into();
 
-            let mac: String = env
+            let mac_J_str = env
                 .get_field(&scan_result, "BSSID", "Ljava/lang/String;")
                 .map_err(|e| Error::JNIError(e.to_string()))?
-                .l()
-                .and_then(|s| env.get_string(&JString::from(s)))
+                .l();
+
+            let mac: String = env
+                .get_string(&JString::from(
+                    mac_J_str.map_err(|e| Error::JNIError(e.to_string()))?,
+                ))
                 .map_err(|e| Error::JNIError(e.to_string()))?
                 .into();
 
