@@ -2,8 +2,6 @@ use crate::{Error, Result, Wifi};
 use jni::objects::{GlobalRef, JString, JValue};
 use jni::JavaVM;
 use std::sync::OnceLock;
-use std::thread::sleep;
-use std::time::Duration;
 
 pub static ANDROID_SCANNER: OnceLock<AndroidScanner> = OnceLock::new();
 
@@ -72,8 +70,6 @@ impl AndroidScanner {
             if size > 0 {
                 break (scan_results, size);
             }
-
-            sleep(Duration::from_millis(100));
         };
 
         let mut networks = Vec::new();
