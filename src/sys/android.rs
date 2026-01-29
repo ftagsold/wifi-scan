@@ -1,6 +1,6 @@
 use crate::{Error, Result, Wifi};
-use jni::objects::{GlobalRef, JObject, JString, JValue};
-use jni::{JNIEnv, JavaVM};
+use jni::objects::{GlobalRef, JString, JValue};
+use jni::JavaVM;
 use std::sync::OnceLock;
 
 pub static ANDROID_SCANNER: OnceLock<AndroidScanner> = OnceLock::new();
@@ -54,19 +54,23 @@ impl AndroidScanner {
         env.call_method(&wifi_manager, "startScan", "()Z", &[])
             .map_err(|e| Error::JNIError(e.to_string()))?;
 
-        // wifiManager.getScanResults()
-        let scan_results = env
-            .call_method(&wifi_manager, "getScanResults", "()Ljava/util/List;", &[])
-            .map_err(|e| Error::JNIError(e.to_string()))?
-            .l()
-            .map_err(|e| Error::JNIError(e.to_string()))?;
+        let (scan_results, size) = loop {
+            let scan_results = env
+                .call_method(&wifi_manager, "getScanResults", "()Ljava/util/List;", &[])
+                .map_err(|e| Error::JNIError(e.to_string()))?
+                .l()
+                .map_err(|e| Error::JNIError(e.to_string()))?;
 
-        // List.size()
-        let size = env
-            .call_method(&scan_results, "size", "()I", &[])
-            .map_err(|e| Error::JNIError(e.to_string()))?
-            .i()
-            .map_err(|e| Error::JNIError(e.to_string()))?;
+            let size = env
+                .call_method(&scan_results, "size", "()I", &[])
+                .map_err(|e| Error::JNIError(e.to_string()))?
+                .i()
+                .map_err(|e| Error::JNIError(e.to_string()))?;
+
+            if size > 0 {
+                break (scan_results, size);
+            }
+        };
 
         let mut networks = Vec::new();
 
