@@ -11,11 +11,8 @@ pub struct AndroidScanner {
 }
 
 impl AndroidScanner {
-    pub fn init_with_env(env: &mut JNIEnv, context: JObject) -> Result<()> {
-        ANDROID_SCANNER.get_or_init(|| AndroidScanner {
-            java_vm: env.get_java_vm().unwrap(),
-            context: env.new_global_ref(context).unwrap(),
-        });
+    pub fn init_with_env(env: JavaVM, context: GlobalRef) -> Result<()> {
+        ANDROID_SCANNER.get_or_init(|| AndroidScanner { java_vm, context });
 
         Ok(())
     }

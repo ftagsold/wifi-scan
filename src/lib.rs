@@ -295,6 +295,6 @@ pub fn scan() -> Result<Vec<Wifi>> {
 }
 
 #[cfg(target_os = "android")]
-pub fn init_with_env(env: &mut jni::JNIEnv, context: jni::objects::JObject) -> Result<()> {
+pub fn init_with_env(env: jni::JavaVM, context: jni::objects::GlobalRef) -> Result<()> {
     sys::android::AndroidScanner::init_with_env(env, context)
 }
